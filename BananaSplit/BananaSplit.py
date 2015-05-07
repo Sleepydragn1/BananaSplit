@@ -1,31 +1,62 @@
 import os
+import sys
+import shutil
 import math
 import subprocess
 import time
 # import antigravity
 
+print("****************************************")
+print("Banana Split by Sleepydragn1")
+print("https://github.com/Sleepydragn1/BananaSplit")
+print("Type 'exit' in any of the inputs to exit the script!")
+print("****************************************")
+print("")
+
 class InvalidInputError(Exception):
     pass
 
-path = input("File path: " )
+def inputE(question):
+    inputStr = input(question)
+    if inputStr == 'exit':
+        print("Exiting script.")
+        sys.exit()
+    return inputStr
+
+path = inputE("File path: " )
 if path[len(path) - 1] != "/" and path[len(path) - 1] != "\\":
     path = os.path.join(path, "")
 while not os.path.exists(path):
     print("Invalid or inaccessible file path!")
-    path = input("File path: " )
-    
-project = input("Project name: ")
-if not project:
-    print("No project specified. After Effects will render your currently open project.")
+    path = inputE("File path: " )
 
-composition = input("Composition name: ")
+validFlag = False
+while not validFlag:
+    project = inputE("Project name: ")
+    if not project:
+        print("No project specified. After Effects will render your currently open project.")
+        validFlag = True
+    else:
+        if project.endswith(".aep"):
+            if not os.path.exists(path + project):
+                print("Invalid or inaccessible project!")
+            else:
+                path = path[0:len(path) - 4]
+                validFlag = True
+        else:
+            if not os.path.exists(path + project + ".aep"):
+                print("Invalid or inaccessible project!")
+            else:
+                validFlag = True
+
+composition = inputE("Composition name: ")
 if not composition:
     print("Defaulting to 'Main'")
     composition = "Main"
 
 validFlag = False
 while not validFlag:
-    framerate = input("Composition framerate: ")
+    framerate = inputE("Composition framerate: ")
     if framerate == "":
         print("Defaulting to 60fps.")
         framerate = 60.0
@@ -43,10 +74,10 @@ while not validFlag:
 
 validFlag = False
 while not validFlag:
-    rFramerate = input("Re-encode framerate: ")
+    rFramerate = inputE("Re-encode framerate: ")
     if rFramerate == "":
-        print("Defaulting to 60fps.")
-        rFramerate = 60.0
+        print("Defaulting to composition framerate (" + str(framerate) + ")")
+        rFramerate = framerate
         validFlag = True
     else:
         try:
@@ -61,12 +92,16 @@ while not validFlag:
         
 validFlag = False
 while not validFlag:
-    audio = input("Include audio? (y/n): ")
+    audio = inputE("Include audio? (y/n): ")
     if not audio:
         print("Defaulting to enabled audio.")
-        audio = "y"
+        audio = True
         validFlag = True
-    elif audio == "y" or audio == "Y" or audio == "n" or audio == "N":
+    elif audio == "y" or audio == "Y":
+        audio = True
+        validFlag = True
+    elif audio == "n" or audio == "N":
+        audio = False
         validFlag = True
     else:
         print("Invalid answer!")
@@ -75,10 +110,11 @@ durationFlag = False
 while not durationFlag:
     validFlag = False
     while not validFlag:
-        durationHours = input("Composition hour duration: ")
+        durationHours = inputE("Composition hour duration: ")
         if not durationHours:
             print("Defaulting to 0.")
             durationHours = 0
+            validFlag = True
         else:
             try:
                 durationHours = int(durationHours)
@@ -91,10 +127,11 @@ while not durationFlag:
     
     validFlag = False
     while not validFlag:
-        durationMinutes = input("Composition minute duration: ")
+        durationMinutes = inputE("Composition minute duration: ")
         if not durationMinutes:
             print("Defaulting to 0.")
             durationMinutes = 0
+            validFlag = True
         else:
             try:
                 durationMinutes = int(durationMinutes)
@@ -109,10 +146,11 @@ while not durationFlag:
                 
     validFlag = False
     while not validFlag:
-        durationSeconds = input("Composition second duration: ")
+        durationSeconds = inputE("Composition second duration: ")
         if not durationSeconds:
             print("Defaulting to 0.")
             durationSeconds = 0
+            validFlag = True
         else:
             try:
                 durationSeconds = int(durationSeconds)
@@ -127,10 +165,11 @@ while not durationFlag:
                 
     validFlag = False
     while not validFlag:
-        durationFrames = input("Composition frame duration: ")
+        durationFrames = inputE("Composition frame duration: ")
         if not durationFrames:
             print("Defaulting to 0.")
             durationFrames = 0
+            validFlag = True
         else:
             try:
                 durationFrames = int(durationFrames)
@@ -143,11 +182,11 @@ while not durationFlag:
             except ValueError:
                 print("Invalid duration!")
     
-    print("The selected composition duration is " + str(durationHours) + ":" + str(durationMinutes) + ":" + str(durationSeconds) + ":" + str(durationFrames) + ".")
+    print("The selected composition duration is " + "%02d" % (durationHours) + ":" + "%02d" % (durationMinutes) + ":" + "%02d" % (durationSeconds) + ":" + "%02d" % (durationFrames) + ".")
     
     validFlag = False
     while not validFlag:
-        correct = input("Is this correct? (y/n): ")
+        correct = inputE("Is this correct? (y/n): ")
         
         if correct == "y" or correct == "Y" or correct == "n" or correct == "N":
             validFlag = True
@@ -159,77 +198,99 @@ while not durationFlag:
 
 validFlag = False
 while not validFlag:
-    segmentSize = input("Max duration of segments in minutes: ")
+    segmentSize = inputE("Max duration of segments in minutes: ")
     if not segmentSize:
         print("Defaulting to 3 minutes.")
         segmentSize = 3.0
         validFlag = True
     else:
         try:
-            float(segmentSize)
+            segmentSize = float(segmentSize)
             validFlag = True
         except ValueError:
             print("Invalid segment size!")
         
 validFlag = False
 while not validFlag:
-    reviewToggle = input("Pause before final concatenation to allow for review? (y/n): ")
+    reviewToggle = inputE("Pause before final concatenation to allow for review? (y/n): ")
     if not reviewToggle:
         print("Defaulting to enabled.")
-        reviewToggle = "y"
+        reviewToggle = True
         validFlag = True
-    elif reviewToggle == "y" or reviewToggle == "Y" or reviewToggle == "n" or reviewToggle == "N":
+    elif reviewToggle == "y" or reviewToggle == "Y":
+        reviewToggle = True
         validFlag = True
-    else:
-        print("Invalid answer!")
-
-frames = math.ceil((float(durationMinutes) * 60.0 * framerate) + (float(durationSeconds) * framerate) + float(durationFrames))
-print(str(segmentSize))
-print(str(framerate))
-segmentSizeFrames = math.ceil(segmentSize * 60.0 * framerate)
-numSegments = math.ceil(frames / segmentSizeFrames)
-
-validFlag = False
-while not validFlag:
-    phase = input("Would you like to skip to the review/re-rendering phase? (y/n): ")
-    if not phase:
-        print("Defaulting to no.")
-        phase = "n"
-        validFlag = True
-    elif phase == "y" or phase == "Y" or phase == "n" or phase == "N":
+    elif reviewToggle == "n" or reviewToggle == "N":
+        reviewToggle = False
         validFlag = True
     else:
         print("Invalid answer!")
         
-def configCreate(f):
+validFlag = False
+while not validFlag:
+    phase = inputE("Would you like to skip to the review/re-rendering phase? (y/n): ")
+    if not phase:
+        print("Defaulting to no.")
+        phase = False
+        validFlag = True
+    elif phase == "y" or phase == "Y":
+        phase = True
+        validFlag = True
+    elif phase == "n" or phase == "N":
+        phase = False
+        validFlag = True
+    else:
+        print("Invalid answer!")
+
+firstTime = True
+
+frames = math.ceil((float(durationMinutes) * 60.0 * framerate) + (float(durationSeconds) * framerate) + float(durationFrames))
+segmentSize = 0.25
+framerate = 15.0
+segmentSizeFrames = math.ceil(segmentSize * 60.0 * framerate)
+numSegments = math.ceil(frames / segmentSizeFrames)
+        
+def configCreate():
     f = open(path + 'bsConfig.txt', 'w+')
-    f.write("# Substitution tokens: " +
-        "@n: The fragment's file name" +
-        "# @f: Framerate" +
-        "#" +
-        "# Main re-encoding parameters:" +
-        "-i @n.avi' -c:v libx264 -crf 18 -r @f -y @n.mp4" +
-        "# Audio parameters:" + 
-        "-c:a ac3 -b:a 128k)")
+    f.write("# Substitution tokens:\n" 
+                + "# @n: The fragment's file name\n" 
+                + "# @f: Framerate\n" 
+                + "#\n" 
+                + "Main re-encoding parameters:\n" 
+                + "-i\n" 
+                + "@n.avi\n" 
+                + "-c:v\n" 
+                + "libx264\n" 
+                + "-crf\n" 
+                + "18\n" 
+                + "-r\n" 
+                + "@f\n" 
+                + "-y\n" 
+                + "@n.mp4\n" 
+                + "#\n" 
+                + "Audio parameters:\n" 
+                + "-c:a\n" 
+                + "ac3\n" 
+                + "-b:a\n" 
+                + "128k\n")
     f.close()
     return
         
-def renderCommand(audio, i):
+def renderCommand(audio, outputFile):
     if not os.path.exists(path + "bsConfig.txt"):
         configCreate()
     f = open(path + 'bsConfig.txt', 'r+')
     
-    outputFile = project + '_' + composition + "_fragment" + "_" + str(i)
-    command = []
+    command = ["ffmpeg"]
     
-    for line in f:
-        l = line.readline()
+    for l in f:
         if not l.startswith("#"):
             if not audio and l.startswith("Audio parameters:"):
                 break
             elif not l.startswith("Main re-encoding parameters:"):
-                command.append(line.replace("@n", outputFile).replace("@f", rFramerate))
+                command.append(l.replace("@n", path + outputFile).replace("@f", str(rFramerate)).replace("\n", ""))
             
+    print(command)
     return command
 
 def render(i, s, e, fLModify):
@@ -244,10 +305,10 @@ def render(i, s, e, fLModify):
     
     if project:
         outputFile = project + '_' + composition + "_fragment" + "_" + str(i)
-        subprocess.call(['aerender', '-project', '"' + path + str(project) + '.aep' + '"', '-comp', '"' + composition + '"', '-s', str(s), '-e', str(e), '-output', '"' + path + outputFile + '.avi' + '"'])
+        subprocess.call(['aerender', '-project', path + str(project) + ".aep", '-comp', composition, '-s', str(s), '-e', str(e), '-output', path + outputFile + '.avi'])
     else:
-        outputFile = composition + "_fragment" + str(i) + '.avi'
-        subprocess.call(['aerender', '-comp', '"' + composition + '"', '-s', str(s), '-e', str(e), '-output', '"' + path + outputFile + '.avi' + '"'])
+        outputFile = composition + "_fragment" + str(i)
+        subprocess.call(['aerender', '-comp', composition, '-s', str(s), '-e', str(e), '-output', path + outputFile + '.avi'])
     
     print("")
     print("****************************************")
@@ -256,17 +317,17 @@ def render(i, s, e, fLModify):
     print("")
     time.sleep(5)
 
-    if audio == 'y' or audio == 'Y':
+    if audio:
         #os.system('ffmpeg' + " " + '-i' + " " + '"' + path + outputFile + '.avi' + '"' + " " + '-c:v' + " " + 'libx264' + " " + '-crf' + " " + '18' + " " + '-r' + " " + str(framerate) + " " + '-c:a' + " " + 'ac3' + " " + '-b:a' + " " + '128k' + " -y " + '"' + path + outputFile + '.mp4' + '"')
-        subprocess.call(renderCommand(True, i))
+        subprocess.call(renderCommand(True, outputFile))
     else:
         #os.system('ffmpeg' + ' ' + '-i' + ' ' + '"' + path + outputFile + '.avi' + '"' + ' ' + '-c:v' + ' ' + 'libx264' + ' ' + '-crf' + ' ' + '18' + ' ' + '-r' + ' ' + str(framerate) + ' ' + '-an' + ' -y ' + '"' + path + outputFile + '.mp4' + '"')
-        subprocess.call(renderCommand(False, i))
+        subprocess.call(renderCommand(False, outputFile))
 
     print("")
     print("****************************************")
     print("Done processing fragment " + str(i))
-    print("Total fragment processing time:" + renderTime(startTime))
+    print("Total fragment processing time: " + renderTime(startTime))
     print("****************************************")
     print("")
     
@@ -277,8 +338,16 @@ def render(i, s, e, fLModify):
     
     if fLModify:
         print("Adding fragment entry to fragmentList.txt...")
+        global firstTime
         if not os.path.exists(path + 'fragmentList.txt'):
             open(path + 'fragmentList.txt', 'w+').close()
+        elif firstTime:
+            print("Existing fragmentList.txt detected. Backing it up to fragmentList.bak...")
+            shutil.copyfile(path + 'fragmentList.txt', path + 'fragmentList.bak')
+            os.remove(path + 'fragmentList.txt')
+            open(path + 'fragmentList.txt', 'w+').close()
+            print("Done!")
+            firstTime = False
         
         f = open(path + 'fragmentList.txt', 'r+')
         f.read(-1)
@@ -309,7 +378,7 @@ def renderTime(startTime):
     if (rendDays > 0):
         rendString += str(rendDays) + " Days"
     if (rendHours > 0):
-        rendString += str(rendHours) + " Hours"
+        rendString += str(rendHours) + " Hours" 
     if (rendMinutes > 0):
         rendString += str(rendMinutes) + " Minutes"
     if (rendSeconds > 0):
@@ -333,23 +402,23 @@ def renderLoop():
             end = frames
     
     print("")
-    print("Total render time:" + renderTime(startTime) + ".")
+    print("Total render time: " + renderTime(startTime) + ".")
     
     return
 
 def review():
-    if reviewToggle == 'y' or reviewToggle == 'Y':
+    if reviewToggle:
         print("")
         print("Please review the fragments at this time.")
         
         while True:
             try:
-                rr = input("What fragment(s) would you like to re-render (separate with spaces)? ")
+                rr = inputE("What fragment(s) would you like to re-render (separate with spaces)? ")
                 
                 if not rr:
                     break
                 else:
-                    rr = rr.split()
+                    rr = rr.split(" ")
                     i = 0
                     while i < len(rr):
                         rr[i] = int(rr[i])
@@ -361,7 +430,7 @@ def review():
                         start = rr[i] * segmentSizeFrames
                         end = ((rr[i] + 1) * segmentSizeFrames) - 1
                         render(rr[i], start, end, False)
-                break
+                        i+=1
             except ValueError:
                 print("Invalid entry. Please enter only integer values.")
             except InvalidInputError:
@@ -376,39 +445,92 @@ def review():
     startTime = time.time()
     
     if project:
-        subprocess.call('ffmpeg', '-f', 'concat', '-i', path + 'fragmentList.txt', '-c', 'copy', '-y', path + project + '_' + composition + '.mp4')
-        #subprocess.call(['ffmpeg', '-f', 'concat', '-i', path + 'fragmentList.txt', '-c', 'copy', '"' + path + project + '_' + composition + '.mp4' + '"'])
+        subprocess.call(['ffmpeg', '-f', 'concat', '-i', path + 'fragmentList.txt', '-c', 'copy', '-y', path + project + '_' + composition + '.mp4'])
     else:
-        subprocess.call('ffmpeg', '-f', 'concat', '-i', path + 'fragmentList.txt', '-c', 'copy', '-y', path + '_' + composition + '.mp4')
-        #subprocess.call(['ffmpeg', '-f', 'concat', '-i', path + 'fragmentList.txt', '-c', 'copy', '"' + path + composition + '.mp4' + '"'])
+        subprocess.call(['ffmpeg', '-f', 'concat', '-i', path + 'fragmentList.txt', '-c', 'copy', '-y', path + '_' + composition + '.mp4'])
     
     print("")
     print("****************************************")
     print("Done combining fragments.")
-    print("Total concatenation time:" + renderTime(startTime))
+    print("Total concatenation time: " + renderTime(startTime))
     print("****************************************")
     print("")
     
     validFlag = False
     while not validFlag:
-        delF = input("Delete fragmentList.txt? Only do this if this is the final production version. (y/n): ")
+        delF = inputE("Delete fragmentList.txt? Only do this if this is the final production version. (y/n): ")
         if not delF:
             print("Not deleting fragmentList.txt by default.")
-            delF = "n"
+            delF = False
             validFlag = True
-        elif delF == "y" or delF == "Y" or delF == "n" or delF == "N":
+        elif delF == "y" or delF == "Y":
+            delF = True
+            validFlag = True
+        elif delF == "n" or delF == "N":
+            delF = False
             validFlag = True
         else:
             print("Invalid answer!")
     
-    if delF == "y" or delF == "Y":
+    if delF:
         print("Deleting fragmentList.txt...")
         os.remove(path + 'fragmentList.txt')
         print("Done!")
+        
+    if os.path.exists(path + "fragmentList.bak"):
+        validFlag = False
+        while not validFlag:
+            delF = inputE("Delete fragmentList.bak? Only do this if this is the final production version. (y/n): ")
+            if not delF:
+                print("Not deleting fragmentList.bak by default.")
+                delF = False
+                validFlag = True
+            elif delF == "y" or delF == "Y":
+                delF = True
+                validFlag = True
+            elif delF == "n" or delF == "N":
+                delF = False
+                validFlag = True
+            else:
+                print("Invalid answer!")
+        
+        if delF:
+            print("Deleting fragmentList.bak...")
+            os.remove(path + 'fragmentList.bak')
+            print("Done!")
+    
+    validFlag = False
+    while not validFlag:
+        delF = inputE("Delete video fragments? Only do this if this is the final production version. (y/n): ")
+        if not delF:
+            print("Not deleting fragments by default.")
+            delF = False
+            validFlag = True
+        elif delF == "y" or delF == "Y":
+            delF = True
+            validFlag = True
+        elif delF == "n" or delF == "N":
+            delF = False
+            validFlag = True
+        else:
+            print("Invalid answer!")
+    
+    if delF:
+        print("Deleting fragments...")
+        i = 0
+        while i < numSegments:
+            if project:
+                outputFile = project + '_' + composition + "_fragment" + "_" + str(i) + '.mp4'
+            else:
+                outputFile = composition + "_fragment" + str(i) + '.mp4'
+            print("Deleting fragment " + str(i) + "...")
+            os.remove(path + outputFile)
+            print("Done!")
+            i += 1
     
     return
     
-if phase == "y" or phase == "Y":
+if phase:
     review()
 else:
     renderLoop()
