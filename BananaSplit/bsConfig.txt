@@ -1,0 +1,21 @@
+# Substitution tokens:
+# @n: The fragment's file name
+# @f: Framerate
+#
+Main re-encoding parameters:
+-i
+@n.avi
+-c:v
+libx264
+-crf
+18
+-r
+@f
+-y
+@n.mp4
+#
+Audio parameters:
+-c:a
+ac3
+-b:a
+128k
